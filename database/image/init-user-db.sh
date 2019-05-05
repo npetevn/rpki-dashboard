@@ -17,4 +17,13 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     );
     CREATE INDEX index_prefixes_on_prefix ON prefixes USING btree(gw, prefix, prefixlen);
     CREATE INDEX index_prefixes_on_originas ON prefixes USING btree(gw, originas);
+
+    CREATE TABLE roas (
+      asn bigint,
+      prefix text,
+      prefixlen int,
+      maxlength int,
+      ta text
+    );
+    CREATE INDEX index_roas_on_prefix ON roas USING btree(prefix, prefixlen);
 EOSQL
