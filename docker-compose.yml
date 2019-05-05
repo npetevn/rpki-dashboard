@@ -37,6 +37,16 @@ services:
       - POSTGRES_PASS=dev
     volumes:
       - "/var/lib/repos/rpki-dashboard/collector:/collector/scripts"
+  rpkival:
+    image: ripencc/rpki-validator-3-docker
+    networks:
+      bgp:
+        aliases:
+          - rpkival
+    volumes:
+      - "/var/lib/repos/rpki-dashboard/rpki/tals:/var/lib/rpki-validator-3/preconfigured-tals"
+    ports:
+      - "8080:8080"
 networks:
   bgp:
     driver: bridge
