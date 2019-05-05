@@ -1,29 +1,29 @@
 version: "3.3"
 services:
-  bgpsrc:
-    #image: mikenowak/exabgp
-    build:
-      context: ./bgpsrc/image
-      dockerfile: Dockerfile
-    networks:
-      bgp:
-        ipv4_address: 172.16.238.100
-        aliases:
-          - bgpsrc
-    volumes:
-      - "/var/lib/repos/rpki-dashboard/bgpsrc/exabgp:/etc/exabgp"
-    command: sleep 100000
-  bgpinject:
-    image: mikenowak/exabgp
-    networks:
-      bgp:
-        ipv4_address: 172.16.238.200
-        aliases:
-          - bgpinject
-    ports:
-      - "5001:5001"
-    volumes:
-      - "/var/lib/repos/rpki-dashboard/bgpinject/exabgp:/usr/etc/exabgp"
+  #  bgpsrc:
+  #    #image: mikenowak/exabgp
+  #    build:
+  #      context: ./bgpsrc/image
+  #      dockerfile: Dockerfile
+  #    networks:
+  #      bgp:
+  #        ipv4_address: 172.16.238.100
+  #        aliases:
+  #          - bgpsrc
+  #    volumes:
+  #      - "/var/lib/repos/rpki-dashboard/bgpsrc/exabgp:/etc/exabgp"
+  #    command: sleep 100000
+  #  bgpinject:
+  #    image: mikenowak/exabgp
+  #    networks:
+  #      bgp:
+  #        ipv4_address: 172.16.238.200
+  #        aliases:
+  #          - bgpinject
+  #    ports:
+  #      - "5001:5001"
+  #    volumes:
+  #      - "/var/lib/repos/rpki-dashboard/bgpinject/exabgp:/usr/etc/exabgp"
   database:
     build:
       context: ./database/image
@@ -33,7 +33,10 @@ services:
         aliases:
           - db
     environment:
-      - MYSQL_ROOT_PASSWORD=test123
+      - POSTGRES_USER=dev
+      - POSTGRES_PASS=dev
+    volumes:
+      - "/var/lib/repos/rpki-dashboard/collector:/collector/scripts"
 networks:
   bgp:
     driver: bridge
