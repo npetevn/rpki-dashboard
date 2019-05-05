@@ -1,0 +1,43 @@
+version: "3.3"
+services:
+  bgpsrc:
+    #image: mikenowak/exabgp
+    build:
+      context: ./bgpsrc/image
+      dockerfile: Dockerfile
+    networks:
+      bgp:
+        ipv4_address: 172.16.238.100
+        aliases:
+          - bgpsrc
+    volumes:
+      - "/var/lib/repos/rpki-dashboard/bgpsrc/exabgp:/etc/exabgp"
+    command: sleep 100000
+  bgpinject:
+    image: mikenowak/exabgp
+    networks:
+      bgp:
+        ipv4_address: 172.16.238.200
+        aliases:
+          - bgpinject
+    ports:
+      - "5001:5001"
+    volumes:
+      - "/var/lib/repos/rpki-dashboard/bgpinject/exabgp:/usr/etc/exabgp"
+  database:
+    build:
+      context: ./database/image
+      dockerfile: Dockerfile
+    networks:
+      bgp:
+        aliases:
+          - db
+    environment:
+      - MYSQL_ROOT_PASSWORD=test123
+networks:
+  bgp:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.238.0/24
