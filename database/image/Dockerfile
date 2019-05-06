@@ -19,3 +19,6 @@ RUN git clone https://github.com/yasuhiro-ohara-ntt/bgpdump2.git && \
 
 COPY init-user-db.sh /docker-entrypoint-initdb.d/
 RUN chmod a+x /docker-entrypoint-initdb.d/init-user-db.sh
+
+COPY import.sh /import.sh
+RUN chmod a+x /import.sh

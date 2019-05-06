@@ -35,6 +35,8 @@ services:
     environment:
       - POSTGRES_USER=dev
       - POSTGRES_PASS=dev
+    depends_on:
+      - rpkival
     volumes:
       - "/var/lib/repos/rpki-dashboard/collector:/collector/scripts"
   rpkival:
