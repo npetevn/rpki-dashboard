@@ -2,7 +2,7 @@
 
 sleep 60
 date=`date +%Y%m%d`
-hour= $(( `date +%H` ))
+hour=$(( `date +%H` ))
 
 if [[ $hour != $(( ($hour / 2) * 2 )) ]]; then
   hour=$(($hour-1))
