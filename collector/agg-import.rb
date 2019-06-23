@@ -45,7 +45,7 @@ def load(db, gw, file)
 	stats = {}
 
   num = 0
-  IO.popen("bgpdump2 #{file} | shuf -n 2000") do |io|
+  IO.popen("bgpdump2 #{file}") do |io|
     while str = io.gets
       arr = str.split
       (prefix, prefixlen) = arr[0].split('/')
