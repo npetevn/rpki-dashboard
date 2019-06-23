@@ -29,7 +29,7 @@ services:
       context: ./database/image
       dockerfile: Dockerfile
     networks:
-      bgp:
+      rpki:
         aliases:
           - db
     environment:
@@ -42,17 +42,27 @@ services:
   rpkival:
     image: ripencc/rpki-validator-3-docker
     networks:
-      bgp:
+      rpki:
         aliases:
           - rpkival
+    privileged: true
     volumes:
       - "/var/lib/repos/rpki-dashboard/rpki/tals:/var/lib/rpki-validator-3/preconfigured-tals"
     ports:
       - "8080:8080"
+  api:
+    build:
+      context: ./backend/image
+      dockerfile: Dockerfile
+    command: sleep 100000
+    networks:
+      rpki:
+        aliases:
+          - api
+    volumes:
+      - "/var/lib/repos/rpki-dashboard/backend/src:/app"
+    ports:
+      - "4000:4000"
 networks:
-  bgp:
+  rpki:
     driver: bridge
-    ipam:
-      driver: default
-      config:
-      - subnet: 172.16.238.0/24

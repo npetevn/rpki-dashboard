@@ -1,0 +1,33 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Backend for our RPKI dashboard",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/npetevn/rpki-dashboard.git"
+  },
+  "keywords": [
+    "rpki",
+    "dashboard",
+    "backend"
+  ],
+  "author": "Nikolay Nikolov (npetevn)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/npetevn/rpki-dashboard/issues"
+  },
+  "homepage": "https://github.com/npetevn/rpki-dashboard#readme",
+  "dependencies": {
+    "app-module-path": "^2.2.0",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.4",
+    "express": "^4.16.4",
+    "forever-monitor": "^1.7.1",
+    "lodash": "^4.17.11",
+    "pg": "^7.10.0"
+  }
+}
