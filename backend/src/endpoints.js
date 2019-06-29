@@ -4,6 +4,7 @@ let router = require('express').Router();
 let publicRouter = require('express').Router({ mergeParams: true });
 const { Client } = require('pg')
 const client = new Client()
+client.connect();
 
 global.rootApiPath = __dirname;
 
@@ -15,7 +16,6 @@ publicRouter.route('/test')
 
 publicRouter.route('/stats')
   .get(async (req, res) => {
-    await client.connect();
     let asCount = await client.query('SELECT count(*) FROM asstats;');
     let originAsCount = await client.query('SELECT count(*) FROM asstats WHERE (origin_valid + origin_unknown + origin_length_invalid + origin_as_invalid) > 0;');
     let transitAsCount = await client.query('SELECT count(*) FROM asstats WHERE (transit_valid + transit_unknown + transit_length_invalid + transit_as_invalid) > 0;');
@@ -32,8 +32,6 @@ publicRouter.route('/stats')
 
     let prefixRes = await client.query('select sum(origin_valid) + sum(origin_unknown) + sum(origin_as_invalid) + sum(origin_length_invalid) as totalsum, sum(origin_valid) as valid, sum(origin_unknown) as unknown, sum(origin_as_invalid) as as_invalid, sum(origin_length_invalid) as length_invalid from asstats;');
     let prefixStats = prefixRes.rows[0];
-
-    await client.end();
 
     res.send({
       totalAsCount: asCount.rows[0]['count'],
