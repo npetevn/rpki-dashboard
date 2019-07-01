@@ -92,6 +92,8 @@ let chartRoas = (roas) => {
       ]
     },
     options: {
+      responsive: true,
+      maintainAspectRatio: false,
       barValueSpacing: 20,
       scales: {
         yAxes: [{
@@ -112,7 +114,8 @@ let chartNeighbors = (neighbors) => {
       return {
         originating: originating,
         origin_valid: origin_valid,
-        origin_invalid: origin_invalid
+        origin_invalid: origin_invalid,
+        asn: neighbor.asn
       };
   });
 
@@ -122,21 +125,33 @@ let chartNeighbors = (neighbors) => {
   let neighborChart = new Chart($("#originatingChart"), {
     type: 'bubble',
     data: {
-      datasets: [{
-        label: 'Direct Neighbors',
-        data: _.map(neighStats, (neighbor) => {
-          return {
+      datasets: _.map(neighStats, (neighbor) => ({
+        label: `AS${neighbor.asn}: ${neighbor.originating}`,
+        data: [{
             x: neighbor.origin_valid,
             y: neighbor.origin_invalid,
             r: (neighbor.originating / maxOriginating) * maxR
-          }
-        }),
+        }],
         backgroundColor: '#e8c547'
-      }]
+      }))
+      // datasets: [{
+      //   label: 'Direct Neighbors',
+      //   data: _.map(neighStats, (neighbor) => {
+      //     return {
+      //       x: neighbor.origin_valid,
+      //       y: neighbor.origin_invalid,
+      //       r: (neighbor.originating / maxOriginating) * maxR
+      //     }
+      //   }),
+      //   backgroundColor: '#e8c547'
+      // }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false
+      maintainAspectRatio: false,
+      legend: {
+        display: false
+      }
     }
   });
 };
