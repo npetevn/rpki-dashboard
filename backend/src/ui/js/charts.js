@@ -1,7 +1,11 @@
+//let bgPalette = ['#5c80bc', '#8f7fc4', '#c07cbf', '#e77aac', '#ff8090', '#ff9171', '#ffa955', '#e8c547'];
+let bgPalette = ['#6610f2', '#e83e8c', '#fd7e14', '#f6c23e', '#20c9a6'];
+let hoverPalette = ['#795da8', '#b47492', '#ad8667', '#b8a67a', '#52988a'];
+
 let drawDoughnutChart = (elementId, labels, data) => {
   let length = labels.length;
-  let bgColors = ['#5c80bc', '#8f7fc4', '#c07cbf', '#e77aac', '#ff8090', '#ff9171', '#ffa955', '#e8c547'].slice(0, length);
-  let hoverColors = ['#57467b', '#8d4c86', '#c05382', '#e96271', '#ff8057', '#ffa73b', '#f3d32a', '#cafe48'].slice(0, length);
+  let bgColors = bgPalette.slice(0, length);
+  let hoverColors = hoverPalette.slice(0, length);
   let originAsesChart = new Chart($(elementId), {
     type: 'doughnut',
     data: {
@@ -81,12 +85,14 @@ let chartRoas = (roas) => {
       datasets: [
         {
           label: 'Prefixes',
-          backgroundColor: '#5c80bc',
+          backgroundColor: bgPalette[0],
+          hoverBackgroundColor: hoverPalette[0],
           data: _.map(tals, tal => tal.prefixes)
         },
         {
           label: 'ASes',
-          backgroundColor: '#e8c547',
+          backgroundColor: bgPalette[1],
+          hoverBackgroundColor: hoverPalette[1],
           data: _.map(tals, tal => tal.ases)
         }
       ]
@@ -106,8 +112,8 @@ let chartRoas = (roas) => {
   });
 };
 
-let chartNeighbors = (neighbors) => {
-  let neighStats = _.map(neighbors, (neighbor) => {
+let chartOriginNeighbors = (neighbors) => {
+  let neighStats = _.map(_.filter(neighbors, (n) => n.min_distance <= 0), (neighbor) => {
       let originating = neighbor.origin_valid + neighbor.origin_unknown + neighbor.origin_length_invalid + neighbor.origin_as_invalid;
       let origin_valid = neighbor.origin_valid;
       let origin_invalid = neighbor.origin_length_invalid + neighbor.origin_as_invalid;
@@ -115,24 +121,26 @@ let chartNeighbors = (neighbors) => {
         originating: originating,
         origin_valid: origin_valid,
         origin_invalid: origin_invalid,
-        asn: neighbor.asn
+        asn: neighbor.asn,
+        min_distance: neighbor.min_distance
       };
   });
 
   let maxOriginating = _.max(_.map(neighStats, (n) => n.originating));
-  let maxR = 100;
+  let maxR = 80;
 
   let neighborChart = new Chart($("#originatingChart"), {
     type: 'bubble',
     data: {
       datasets: _.map(neighStats, (neighbor) => ({
-        label: `AS${neighbor.asn}: ${neighbor.originating}`,
+        label: `AS${neighbor.asn} originates ${neighbor.origin_valid} valid and ${neighbor.origin_invalid} invalid of ${neighbor.originating} prefixes`,
         data: [{
-            x: neighbor.origin_valid,
-            y: neighbor.origin_invalid,
+            x: (neighbor.origin_valid / neighbor.originating) * 100,
+            y: (neighbor.origin_invalid / neighbor.originating) * 100,
             r: (neighbor.originating / maxOriginating) * maxR
         }],
-        backgroundColor: '#e8c547'
+        backgroundColor: bgPalette[neighbor.min_distance],
+        hoverBackgroundColor: hoverPalette[neighbor.min_distance],
       }))
       // datasets: [{
       //   label: 'Direct Neighbors',
@@ -151,6 +159,108 @@ let chartNeighbors = (neighbors) => {
       maintainAspectRatio: false,
       legend: {
         display: false
+      },
+      tooltips: {
+        enabled: true,
+        callbacks: {
+          label: function(tooltipItems, data) {
+            return data.datasets[tooltipItems.datasetIndex].label;
+          }
+        }
+      },
+      scales: {
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            padding: 10,
+            labelString: 'RPKI valid prefixes as % of totally originated'
+          }
+        }],
+        yAxes: [{
+          scaleLabel: {
+            display: true,
+            padding: 60,
+            labelString: 'RPKI invalid prefixes as % of totally originated'
+          }
+        }]
+      }
+    }
+  });
+};
+
+let chartTransitNeighbors = (neighbors) => {
+  let neighStats = _.map(neighbors, (neighbor) => {
+      let transiting = neighbor.transit_valid + neighbor.transit_unknown + neighbor.transit_length_invalid + neighbor.transit_as_invalid;
+      let transit_valid = neighbor.transit_valid;
+      let transit_invalid = neighbor.transit_length_invalid + neighbor.transit_as_invalid;
+      return {
+        transiting: transiting,
+        transit_valid: transit_valid,
+        transit_invalid: transit_invalid,
+        asn: neighbor.asn,
+        min_distance: neighbor.min_distance
+      };
+  });
+
+  let maxTransiting = _.max(_.map(neighStats, (n) => n.transiting));
+  let maxR = 80;
+  let datasets = _.map(neighStats, (neighbor) => ({
+    label: `AS${neighbor.asn} (${neighbor.min_distance} hops away) transits ${neighbor.transit_valid} valid and ${neighbor.transit_invalid} invalid of ${neighbor.transiting} prefixes`,
+    data: [{
+      x: (neighbor.transit_valid / neighbor.transiting) * 100,
+      y: (neighbor.transit_invalid / neighbor.transiting) * 100,
+      r: (neighbor.transiting / maxTransiting) * maxR
+    }],
+    backgroundColor: bgPalette[bgPalette.length - 1 - neighbor.min_distance],
+    hoverBackgroundColor: hoverPalette[hoverPalette.length - 1 - neighbor.min_distance],
+  }));
+  console.log('transiting', datasets);
+
+  let neighborChart = new Chart($("#transitingChart"), {
+    type: 'bubble',
+    data: {
+      datasets: datasets
+      // datasets: [{
+      //   label: 'Direct Neighbors',
+      //   data: _.map(neighStats, (neighbor) => {
+      //     return {
+      //       x: neighbor.transit_valid,
+      //       y: neighbor.transit_invalid,
+      //       r: (neighbor.transiting / maxOriginating) * maxR
+      //     }
+      //   }),
+      //   backgroundColor: '#e8c547'
+      // }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      legend: {
+        display: false
+      },
+      tooltips: {
+        enabled: true,
+        callbacks: {
+          label: function(tooltipItems, data) {
+            return data.datasets[tooltipItems.datasetIndex].label;
+          }
+        }
+      },
+      scales: {
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            padding: 10,
+            labelString: 'RPKI valid prefixes as % of totally transitted'
+          }
+        }],
+        yAxes: [{
+          scaleLabel: {
+            display: true,
+            padding: 60,
+            labelString: 'RPKI invalid prefixes as % of totally transitted'
+          }
+        }]
       }
     }
   });
@@ -163,7 +273,6 @@ $(document).ready(function() {
   Chart.defaults.global.defaultFontColor = '#858796';
 
   $.getJSON(`/api/stats/${vantagePoint}`, function(stats) {
-    console.log('got stats', stats);
     drawDoughnutChart("#prefixChart",
       ['RPKI Valid prefixes', 'RPKI unknown prefixes', 'RPKI protected prefixes from wrong AS', 'RPKI protected prefixes with wrong prefix length'],
       [ stats.validPrefixCount, stats.unknownPrefixCount, stats.asInvalidPrefixCount, stats.lengthInvalidPrefixCount]
@@ -184,10 +293,9 @@ $(document).ready(function() {
   $.getJSON(`/api/as-resources/${vantagePoint}`, function(res) {
     let roas = res.roas;
     let neighbors = res.neighbors;
-    console.log('got roas', roas);
-    console.log('got neighbors', neighbors);
 
     chartRoas(roas);
-    chartNeighbors(neighbors);
+    chartOriginNeighbors(neighbors);
+    chartTransitNeighbors(neighbors);
   });
 });

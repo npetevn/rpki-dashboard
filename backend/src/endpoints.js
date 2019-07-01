@@ -58,7 +58,7 @@ publicRouter.route('/stats/:vp')
 publicRouter.route('/as-resources/:vp')
   .get(async (req, res) => {
     let roasQuery = client.query('SELECT ta, asn, count(*) as count FROM roas GROUP BY ta, asn;');
-    let neighborsQuery = client.query('SELECT * FROM asstats WHERE vantage_point=$1 AND min_distance <= $2;', [req.params.vp, 0]);
+    let neighborsQuery = client.query('SELECT * FROM asstats WHERE vantage_point=$1 AND min_distance <= $2;', [req.params.vp, 2]);
 
     let [roas, neighbors] = await Promise.all([roasQuery, neighborsQuery]);
 
