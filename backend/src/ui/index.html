@@ -125,6 +125,53 @@
               <div class="card shadow mb-4">
                 <!-- Card Header - Dropdown -->
                 <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">Main KPIs</h6>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body">
+                  <div class="main-kpis pt-4">
+                    <div class="kpis-neutral">
+                      A total of
+                      <span class="kpi" id="total_prefixes"></span>
+                      prefixes received from
+                      <span class="kpi" id="total_origin_asns"></span>
+                      ASes and transitted through
+                      <span class="kpi" id="total_transit_asns"></span>
+                      ASes
+                    </div>
+                    <hr />
+                    <div class="kpis-valid">
+                      Of those RPKI valid are
+                      <span class="kpi" id="total_valid_percent"></span>
+                      <span class="kpi" id="total_valid"></span>
+                      prefixes originated by
+                      <span class="kpi" id="origin_valid_asns_percent"></span>
+                      <span class="kpi" id="origin_valid_asns"></span>
+                      ASes and transitted through
+                      <span class="kpi" id="transit_valid_asns_percent"></span>
+                      <span class="kpi" id="transit_valid_asns"></span>
+                    </div>
+                    <hr />
+                    <div class="kpis-invalid">
+                      And RPKI invalid are
+                      <span class="kpi" id="total_invalid_percent"></span>
+                      <span class="kpi" id="total_invalid"></span>
+                      prefixes originated by
+                      <span class="kpi" id="origin_invalid_asns_percent"></span>
+                      <span class="kpi" id="origin_invalid_asns"></span>
+                      ASes and transitted through
+                      <span class="kpi" id="transit_invalid_asns_percent"></span>
+                      <span class="kpi" id="transit_invalid_asns"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-12 col-lg-12">
+              <div class="card shadow mb-4">
+                <!-- Card Header - Dropdown -->
+                <div class="card-header py-3">
                   <h6 class="m-0 font-weight-bold text-primary">Direct AS Neighbors Originating Prefixes</h6>
                 </div>
                 <!-- Card Body -->

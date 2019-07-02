@@ -12059,3 +12059,27 @@ footer.sticky-footer .copyright {
 body.sidebar-toggled footer.sticky-footer {
   width: 100%;
 }
+
+.main-kpis {
+  font-size: 1rem;
+}
+
+.main-kpis hr {
+  height: 1px;
+}
+
+.kpi {
+  font-size: 200%;
+}
+
+.kpis-neutral {
+  color: darkgray;
+}
+
+.kpis-valid {
+  color: green;
+}
+
+.kpis-invalid {
+  color: red;
+}

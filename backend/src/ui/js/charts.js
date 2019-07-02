@@ -281,6 +281,33 @@ $(document).ready(function() {
   Chart.defaults.global.defaultFontColor = '#858796';
 
   $.getJSON(`/api/stats/${vantagePoint}`, function(stats) {
+    $("#total_prefixes").html(stats.totalPrefixCount);
+    $("#total_origin_asns").html(stats.originAsCount);
+    $("#total_transit_asns").html(stats.transitAsCount);
+
+    $("#total_valid").html(`(${stats.validPrefixCount})`);
+    let totalValidPercent = (Number(stats.validPrefixCount) / Number(stats.totalPrefixCount)) * 100;
+    $("#total_valid_percent").html(totalValidPercent.toFixed(2) + '%');
+    $("#origin_valid_asns").html(`(${stats.originValidAsCount})`);
+    let originValidAsnsPercent = (Number(stats.originValidAsCount) / Number(stats.originAsCount)) * 100;
+    $("#origin_valid_asns_percent").html(originValidAsnsPercent.toFixed(2) + '%');
+    $("#transit_valid_asns").html(`(${stats.transitValidAsCount})`);
+    let transitValidAsnsPercent = (Number(stats.transitValidAsCount) / Number(stats.transitAsCount)) * 100;
+    $("#transit_valid_asns_percent").html(transitValidAsnsPercent.toFixed(2) + '%');
+
+    let totalInvalid = Number(stats.asInvalidPrefixCount) + Number(stats.lengthInvalidPrefixCount);
+    $("#total_invalid").html(`(${totalInvalid})`);
+    let totalInvalidPercent = (totalInvalid / Number(stats.totalPrefixCount)) * 100;
+    $("#total_invalid_percent").html(totalInvalidPercent.toFixed(2) + '%');
+    let originInvalidAsCount = Number(stats.originAsInvalidAsCount) + Number(stats.originLengthInvalidAsCount);
+    $("#origin_invalid_asns").html(`(${originInvalidAsCount})`);
+    let originInvalidAsnsPercent = (originInvalidAsCount / Number(stats.originAsCount)) * 100;
+    $("#origin_invalid_asns_percent").html(originInvalidAsnsPercent.toFixed(2) + '%');
+    let transitInvalidAsCount = Number(stats.transitAsInvalidAsCount) + Number(stats.transitLengthInvalidAsCount);
+    $("#transit_invalid_asns").html(`(${transitInvalidAsCount})`);
+    let transitInvalidAsnsPercent = (transitInvalidAsCount / Number(stats.transitAsCount)) * 100;
+    $("#transit_invalid_asns_percent").html(transitInvalidAsnsPercent.toFixed(2) + '%');
+
     drawDoughnutChart("#prefixChart",
       ['RPKI Valid prefixes', 'RPKI unknown prefixes', 'RPKI protected prefixes from wrong AS', 'RPKI protected prefixes with wrong prefix length'],
       [ stats.validPrefixCount, stats.unknownPrefixCount, stats.asInvalidPrefixCount, stats.lengthInvalidPrefixCount]
@@ -288,12 +315,12 @@ $(document).ready(function() {
 
     drawDoughnutChart("#originAsesChart",
       ['ASes originating valid prefixes', 'ASes originating unknown prefixes', 'ASes originating invalid maxlength prefixes', 'ASes originating hijacked prefixes'],
-      [ stats.originValidAsCount, stats.originUnknownAsCount, stats.originLengthInvalidAsCount, stats. originAsInvalidAsCount]
+      [ stats.originValidAsCount, stats.originUnknownAsCount, stats.originLengthInvalidAsCount, stats.originAsInvalidAsCount]
     );
 
     drawDoughnutChart("#transitAsesChart",
       ['ASes transiting valid prefixes', 'ASes transiting unknown prefixes', 'ASes transiting invalid maxlength prefixes', 'ASes transiting hijacked prefixes'],
-      [ stats.transitValidAsCount, stats.transitUnknownAsCount, stats.transitLengthInvalidAsCount, stats. transitAsInvalidAsCount]
+      [ stats.transitValidAsCount, stats.transitUnknownAsCount, stats.transitLengthInvalidAsCount, stats.transitAsInvalidAsCount]
     );
 
   });
