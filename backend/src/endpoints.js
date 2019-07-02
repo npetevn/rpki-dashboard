@@ -75,6 +75,18 @@ publicRouter.route('/roas')
     res.send(roas.rows);
   });
 
+publicRouter.route('/ases/:vp')
+  .get(async (req, res) => {
+    let ases = await client.query(`SELECT asn,
+      origin_valid + origin_as_invalid + origin_length_invalid + origin_unknown as total_originated, origin_valid, origin_as_invalid + origin_length_invalid as origin_invalid,
+      transit_valid + transit_as_invalid + transit_length_invalid + transit_unknown as total_transited, transit_valid, transit_as_invalid + transit_length_invalid as transit_invalid,
+      min_distance
+      FROM asstats
+      WHERE vantage_point = $1;`, [req.params.vp]);
+
+    res.send(ases.rows);
+  });
+
 router.use('/',
   publicRouter
 );
