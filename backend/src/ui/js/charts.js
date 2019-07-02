@@ -181,6 +181,10 @@ let chartOriginNeighbors = (neighbors) => {
             display: true,
             padding: 60,
             labelString: 'RPKI invalid prefixes as % of totally originated'
+          },
+          ticks: {
+            min: 0,
+            max: 15
           }
         }]
       }
@@ -259,6 +263,10 @@ let chartTransitNeighbors = (neighbors) => {
             display: true,
             padding: 60,
             labelString: 'RPKI invalid prefixes as % of totally transitted'
+          },
+          ticks: {
+            min: 0,
+            max: 15
           }
         }]
       }
