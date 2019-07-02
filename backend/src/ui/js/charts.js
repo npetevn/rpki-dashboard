@@ -274,11 +274,8 @@ let chartTransitNeighbors = (neighbors) => {
   });
 };
 
-$(document).ready(function() {
+let fetchAndLoad = () => {
   let vantagePoint = $("#vantagepoint").val();
-
-  Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
-  Chart.defaults.global.defaultFontColor = '#858796';
 
   $.getJSON(`/api/stats/${vantagePoint}`, function(stats) {
     $("#total_prefixes").html(stats.totalPrefixCount);
@@ -333,4 +330,12 @@ $(document).ready(function() {
     chartOriginNeighbors(neighbors);
     chartTransitNeighbors(neighbors);
   });
+};
+
+$(document).ready(function() {
+  Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+  Chart.defaults.global.defaultFontColor = '#858796';
+
+  $("#vantagepoint").change(fetchAndLoad);
+  $("#vantagepoint").change();
 });

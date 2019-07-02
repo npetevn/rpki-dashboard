@@ -1,7 +1,13 @@
-$(document).ready(function() {
+let asesTable;
+
+let fetchAndLoad = () => {
   let vantagePoint = $("#vantagepoint").val();
 
-  $('#asesTable').DataTable({
+  if (asesTable) {
+    asesTable.destroy();
+  }
+
+  asesTable = $('#asesTable').DataTable({
     ajax: {
       url: `/api/ases/${vantagePoint}`,
       dataSrc: ''
@@ -18,4 +24,9 @@ $(document).ready(function() {
     ],
     order: [[7, 'asc']]
   });
+};
+
+$(document).ready(function() {
+  $("#vantagepoint").change(fetchAndLoad);
+  $("#vantagepoint").change();
 });
