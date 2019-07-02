@@ -68,6 +68,13 @@ publicRouter.route('/as-resources/:vp')
     });
   });
 
+publicRouter.route('/roas')
+  .get(async (req, res) => {
+    let roas = await client.query('SELECT asn, prefix, maxLength, ta FROM roas;');
+
+    res.send(roas.rows);
+  });
+
 router.use('/',
   publicRouter
 );
