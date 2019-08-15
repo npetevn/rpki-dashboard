@@ -54,7 +54,7 @@ services:
     build:
       context: ./backend/image
       dockerfile: Dockerfile
-      #command: sleep 100000
+    command: sleep 100000
     environment:
       - PGHOST=db
       - PGUSER=dev
