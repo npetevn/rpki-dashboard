@@ -2,11 +2,16 @@
 let bgPalette = ['#6610f2', '#e83e8c', '#fd7e14', '#f6c23e', '#20c9a6'];
 let hoverPalette = ['#795da8', '#b47492', '#ad8667', '#b8a67a', '#52988a'];
 
-let drawDoughnutChart = (elementId, labels, data) => {
+let drawDoughnutChart = (elementId, labels, data, oldChart) => {
   let length = labels.length;
   let bgColors = bgPalette.slice(0, length);
   let hoverColors = hoverPalette.slice(0, length);
-  let originAsesChart = new Chart($(elementId), {
+
+  if (oldChart) {
+    oldChart.destroy();
+  }
+
+  let doughnutChart = new Chart($(elementId), {
     type: 'doughnut',
     data: {
       labels: labels,
@@ -34,36 +39,13 @@ let drawDoughnutChart = (elementId, labels, data) => {
         position: 'left'
       },
       cutoutPercentage: 80,
-      //legendCallback: function(chart) {
-      //  var text = [];
-      //  text.push('<ul class="' + chart.id + '-legend">');
-      //  var data = chart.data;
-      //  var datasets = data.datasets;
-      //  var labels = data.labels;
-      //  if (datasets.length) {
-      //     for (var i = 0; i < datasets[0].data.length; ++i) {
-      //        text.push('<li><span style="background-color:' + datasets[0].backgroundColor[i] + '"></span>');
-      //        if (labels[i]) {
-      //           // calculate percentage
-      //           var total = datasets[0].data.reduce(function(previousValue, currentValue, currentIndex, array) {
-      //              return previousValue + currentValue;
-      //           });
-      //           var currentValue = datasets[0].data[i];
-      //           var percentage = Math.floor(((currentValue / total) * 100) + 0.5);
-
-      //           text.push(labels[i] + ' (' + percentage + '%)');
-      //        }
-      //        text.push('</li>');
-      //     }
-      //  }
-      //  text.push('</ul>');
-      //  return text.join('');
-      //}
     }
   });
+
+  return doughnutChart;
 };
 
-let chartRoas = (roas) => {
+let chartRoas = (roas, oldChart) => {
   let tals = {};
   _.each(_.uniq(_.map(roas, roa => roa.ta)), ta => {
     tals[ta] = {
@@ -77,6 +59,10 @@ let chartRoas = (roas) => {
     tals[roa.ta].prefixes += Number(roa.count);
   });
   tals = _.sortBy(_.values(tals), tal => tal.prefixes);
+
+  if (oldChart) {
+    oldChart.destroy();
+  }
 
   let roasByTal = new Chart($("#roasByTal"), {
     type: 'bar',
@@ -110,9 +96,11 @@ let chartRoas = (roas) => {
       }
     }
   });
+
+  return roasByTal;
 };
 
-let chartOriginNeighbors = (neighbors) => {
+let chartOriginNeighbors = (neighbors, oldChart) => {
   let neighStats = _.map(_.filter(neighbors, (n) => n.min_distance <= 0), (neighbor) => {
       let originating = neighbor.origin_valid + neighbor.origin_unknown + neighbor.origin_length_invalid + neighbor.origin_as_invalid;
       let origin_valid = neighbor.origin_valid;
@@ -128,6 +116,10 @@ let chartOriginNeighbors = (neighbors) => {
 
   let maxOriginating = _.max(_.map(neighStats, (n) => n.originating));
   let maxR = 80;
+
+  if (oldChart) {
+    oldChart.destroy();
+  }
 
   let neighborChart = new Chart($("#originatingChart"), {
     type: 'bubble',
@@ -190,9 +182,11 @@ let chartOriginNeighbors = (neighbors) => {
       }
     }
   });
+
+  return neighborChart;
 };
 
-let chartTransitNeighbors = (neighbors) => {
+let chartTransitNeighbors = (neighbors, oldChart) => {
   let neighStats = _.map(neighbors, (neighbor) => {
       let transiting = neighbor.transit_valid + neighbor.transit_unknown + neighbor.transit_length_invalid + neighbor.transit_as_invalid;
       let transit_valid = neighbor.transit_valid;
@@ -218,7 +212,10 @@ let chartTransitNeighbors = (neighbors) => {
     backgroundColor: bgPalette[bgPalette.length - 1 - neighbor.min_distance],
     hoverBackgroundColor: hoverPalette[hoverPalette.length - 1 - neighbor.min_distance],
   }));
-  console.log('transiting', datasets);
+
+  if (oldChart) {
+    oldChart.destroy();
+  }
 
   let neighborChart = new Chart($("#transitingChart"), {
     type: 'bubble',
@@ -272,7 +269,16 @@ let chartTransitNeighbors = (neighbors) => {
       }
     }
   });
+
+  return neighborChart;
 };
+
+let prefixChart,
+    originAsesChart,
+    transitAsesChart,
+    roasChart,
+    originNeighChart,
+    transitNeighChart;
 
 let fetchAndLoad = () => {
   let vantagePoint = $("#vantagepoint").val();
@@ -305,19 +311,22 @@ let fetchAndLoad = () => {
     let transitInvalidAsnsPercent = (transitInvalidAsCount / Number(stats.transitAsCount)) * 100;
     $("#transit_invalid_asns_percent").html(transitInvalidAsnsPercent.toFixed(2) + '%');
 
-    drawDoughnutChart("#prefixChart",
+    prefixChart = drawDoughnutChart("#prefixChart",
       ['RPKI Valid prefixes', 'RPKI unknown prefixes', 'RPKI protected prefixes from wrong AS', 'RPKI protected prefixes with wrong prefix length'],
-      [ stats.validPrefixCount, stats.unknownPrefixCount, stats.asInvalidPrefixCount, stats.lengthInvalidPrefixCount]
+      [ stats.validPrefixCount, stats.unknownPrefixCount, stats.asInvalidPrefixCount, stats.lengthInvalidPrefixCount],
+      prefixChart
     );
 
-    drawDoughnutChart("#originAsesChart",
+    originAsesChart = drawDoughnutChart("#originAsesChart",
       ['ASes originating valid prefixes', 'ASes originating unknown prefixes', 'ASes originating invalid maxlength prefixes', 'ASes originating hijacked prefixes'],
-      [ stats.originValidAsCount, stats.originUnknownAsCount, stats.originLengthInvalidAsCount, stats.originAsInvalidAsCount]
+      [ stats.originValidAsCount, stats.originUnknownAsCount, stats.originLengthInvalidAsCount, stats.originAsInvalidAsCount],
+      originAsesChart
     );
 
-    drawDoughnutChart("#transitAsesChart",
+    transitAsesChart = drawDoughnutChart("#transitAsesChart",
       ['ASes transiting valid prefixes', 'ASes transiting unknown prefixes', 'ASes transiting invalid maxlength prefixes', 'ASes transiting hijacked prefixes'],
-      [ stats.transitValidAsCount, stats.transitUnknownAsCount, stats.transitLengthInvalidAsCount, stats.transitAsInvalidAsCount]
+      [ stats.transitValidAsCount, stats.transitUnknownAsCount, stats.transitLengthInvalidAsCount, stats.transitAsInvalidAsCount],
+      transitAsesChart
     );
 
   });
@@ -326,9 +335,9 @@ let fetchAndLoad = () => {
     let roas = res.roas;
     let neighbors = res.neighbors;
 
-    chartRoas(roas);
-    chartOriginNeighbors(neighbors);
-    chartTransitNeighbors(neighbors);
+    roasChart = chartRoas(roas, roasChart);
+    originNeighChart = chartOriginNeighbors(neighbors, originNeighChart);
+    transitNeighChart = chartTransitNeighbors(neighbors, transitNeighChart);
   });
 };
 
