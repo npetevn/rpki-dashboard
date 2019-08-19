@@ -1,6 +1,7 @@
 FROM postgres:9.6
 
 RUN apt-get update && \
+    apt-get install -y bgpdump && \
     apt-get install -y wget ruby ruby-dev postgresql-server-dev-9.6 make gcc git automake && \
     apt-get install -y libbz2-1.0 libbz2-dev libz-dev zlib1g-dev && \
     ln -s /usr/bin/aclocal-1.15 /usr/bin/aclocal-1.14 && \
@@ -21,4 +22,4 @@ COPY init-user-db.sh /docker-entrypoint-initdb.d/
 RUN chmod a+x /docker-entrypoint-initdb.d/init-user-db.sh
 
 COPY import.sh /import.sh
-RUN chmod a+x /import.sh
+#RUN chmod a+x /import.sh
