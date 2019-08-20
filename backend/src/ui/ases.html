@@ -64,7 +64,7 @@
 
       <!-- Nav Item - ROAs -->
       <li class="nav-item">
-        <a class="nav-link" href="#">
+        <a class="nav-link" href="roas.html">
           <i class="fas fa-fw fa-lock"></i>
           <span>ROAs</span></a>
       </li>
@@ -102,10 +102,18 @@
           <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
             <div class="input-group">
               <select id="vantagepoint" class="form-control bg-light border-0 small">
-                <option value="soxrs" selected="true">Serbia</option>
+                <option value="border-lozenets" selected="true">Lozenets</option>
+                <option value="border-rectorate">Rectorate</option>
                 <option value="verizon-leak-20190624">Verizon Route Leak - 24th June 2019</option>
-                <option value="backbone-master" disabled="true">Master</option>
-                <option value="border-rectorate" disabled="true">Rectorate</option>
+              </select>
+            </div>
+          </form>
+
+          <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+            <div class="input-group">
+              <select id="family" class="form-control bg-light border-0 small">
+                <option value="v4" selected="true">IPv4</option>
+                <option value="v6">IPv6</option>
               </select>
             </div>
           </form>

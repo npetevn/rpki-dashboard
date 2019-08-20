@@ -2,6 +2,7 @@ let asesTable;
 
 let fetchAndLoad = () => {
   let vantagePoint = $("#vantagepoint").val();
+  let ipFamily = $("#family").val();
 
   if (asesTable) {
     asesTable.destroy();
@@ -9,7 +10,7 @@ let fetchAndLoad = () => {
 
   asesTable = $('#asesTable').DataTable({
     ajax: {
-      url: `/api/ases/${vantagePoint}`,
+      url: `/api/ases/${vantagePoint}/${ipFamily}`,
       dataSrc: ''
     },
     columns: [
@@ -29,4 +30,7 @@ let fetchAndLoad = () => {
 $(document).ready(function() {
   $("#vantagepoint").change(fetchAndLoad);
   $("#vantagepoint").change();
+
+  $("#family").change(fetchAndLoad);
+  $("#family").change();
 });

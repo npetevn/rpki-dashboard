@@ -16,23 +16,24 @@ publicRouter.route('/test')
     res.send({ status: 'success' });
   });
 
-publicRouter.route('/stats/:vp')
+publicRouter.route('/stats/:vp/:family')
   .get(async (req, res) => {
+    let family = req.params.family === 'v4' ? 'v4' : 'v6';
     let asCount = await client.query('SELECT count(*) FROM asstats WHERE vantage_point = $1;', [req.params.vp]);
-    let originAsCount = await client.query('SELECT count(*) FROM asstats WHERE (origin_valid + origin_unknown + origin_length_invalid + origin_as_invalid) > 0 AND vantage_point=$1;', [req.params.vp]);
-    let transitAsCount = await client.query('SELECT count(*) FROM asstats WHERE (transit_valid + transit_unknown + transit_length_invalid + transit_as_invalid) > 0 AND vantage_point=$1;', [req.params.vp]);
+    let originAsCount = await client.query(`SELECT count(*) FROM asstats WHERE (origin_valid_${family} + origin_unknown_${family} + origin_length_invalid_${family} + origin_as_invalid_${family}) > 0 AND vantage_point=$1;`, [req.params.vp]);
+    let transitAsCount = await client.query(`SELECT count(*) FROM asstats WHERE (transit_valid_${family} + transit_unknown_${family} + transit_length_invalid_${family} + transit_as_invalid_${family}) > 0 AND vantage_point=$1;`, [req.params.vp]);
 
-    let originValidAsCount = await client.query('SELECT count(*) FROM asstats WHERE origin_valid > 0 AND vantage_point=$1;', [req.params.vp]);
-    let originUnknownAsCount = await client.query('SELECT count(*) FROM asstats WHERE origin_unknown > 0 AND vantage_point=$1;', [req.params.vp]);
-    let originAsInvalidAsCount = await client.query('SELECT count(*) FROM asstats WHERE origin_as_invalid > 0 AND vantage_point=$1;', [req.params.vp]);
-    let originLengthInvalidAsCount = await client.query('SELECT count(*) FROM asstats WHERE origin_length_invalid > 0 AND vantage_point=$1;', [req.params.vp]);
+    let originValidAsCount = await client.query(`SELECT count(*) FROM asstats WHERE origin_valid_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
+    let originUnknownAsCount = await client.query(`SELECT count(*) FROM asstats WHERE origin_unknown_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
+    let originAsInvalidAsCount = await client.query(`SELECT count(*) FROM asstats WHERE origin_as_invalid_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
+    let originLengthInvalidAsCount = await client.query(`SELECT count(*) FROM asstats WHERE origin_length_invalid_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
 
-    let transitValidAsCount = await client.query('SELECT count(*) FROM asstats WHERE transit_valid > 0 AND vantage_point=$1;', [req.params.vp]);
-    let transitUnknownAsCount = await client.query('SELECT count(*) FROM asstats WHERE transit_unknown > 0 AND vantage_point=$1;', [req.params.vp]);
-    let transitAsInvalidAsCount = await client.query('SELECT count(*) FROM asstats WHERE transit_as_invalid > 0 AND vantage_point=$1;', [req.params.vp]);
-    let transitLengthInvalidAsCount = await client.query('SELECT count(*) FROM asstats WHERE transit_length_invalid > 0 AND vantage_point=$1;', [req.params.vp]);
+    let transitValidAsCount = await client.query(`SELECT count(*) FROM asstats WHERE transit_valid_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
+    let transitUnknownAsCount = await client.query(`SELECT count(*) FROM asstats WHERE transit_unknown_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
+    let transitAsInvalidAsCount = await client.query(`SELECT count(*) FROM asstats WHERE transit_as_invalid_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
+    let transitLengthInvalidAsCount = await client.query(`SELECT count(*) FROM asstats WHERE transit_length_invalid_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
 
-    let prefixRes = await client.query('select sum(origin_valid) + sum(origin_unknown) + sum(origin_as_invalid) + sum(origin_length_invalid) as totalsum, sum(origin_valid) as valid, sum(origin_unknown) as unknown, sum(origin_as_invalid) as as_invalid, sum(origin_length_invalid) as length_invalid from asstats WHERE vantage_point=$1;', [req.params.vp]);
+    let prefixRes = await client.query(`select sum(origin_valid_${family}) + sum(origin_unknown_${family}) + sum(origin_as_invalid_${family}) + sum(origin_length_invalid_${family}) as totalsum, sum(origin_valid_${family}) as valid, sum(origin_unknown_${family}) as unknown, sum(origin_as_invalid_${family}) as as_invalid, sum(origin_length_invalid_${family}) as length_invalid from asstats WHERE vantage_point=$1;`, [req.params.vp]);
     let prefixStats = prefixRes.rows[0];
 
     res.send({
@@ -55,9 +56,9 @@ publicRouter.route('/stats/:vp')
     });
   });
 
-publicRouter.route('/as-resources/:vp')
+publicRouter.route('/as-resources/:vp/:family')
   .get(async (req, res) => {
-    let roasQuery = client.query('SELECT ta, asn, count(*) as count FROM roas GROUP BY ta, asn;');
+    let roasQuery = client.query('SELECT ta, asn, count(*) as count FROM roas WHERE family=$1 GROUP BY ta, asn;', [req.params.family]);
     let neighborsQuery = client.query('SELECT * FROM asstats WHERE vantage_point=$1 AND min_distance <= $2;', [req.params.vp, 2]);
 
     let [roas, neighbors] = await Promise.all([roasQuery, neighborsQuery]);
@@ -75,14 +76,15 @@ publicRouter.route('/roas')
     res.send(roas.rows);
   });
 
-publicRouter.route('/ases/:vp')
+publicRouter.route('/ases/:vp/:family')
   .get(async (req, res) => {
+    let family = req.params.family === 'v4' ? 'v4' : 'v6';
     let ases = await client.query(`SELECT asn,
-      origin_valid + origin_as_invalid + origin_length_invalid + origin_unknown as total_originated, origin_valid, origin_as_invalid + origin_length_invalid as origin_invalid,
-      transit_valid + transit_as_invalid + transit_length_invalid + transit_unknown as total_transited, transit_valid, transit_as_invalid + transit_length_invalid as transit_invalid,
+      origin_valid_${family} + origin_as_invalid_${family} + origin_length_invalid_${family} + origin_unknown_${family} as total_originated, origin_valid_${family} as origin_valid, origin_as_invalid_${family} + origin_length_invalid_${family} as origin_invalid,
+      transit_valid_${family} + transit_as_invalid_${family} + transit_length_invalid_${family} + transit_unknown_${family} as total_transited, transit_valid_${family} as transit_valid, transit_as_invalid_${family} + transit_length_invalid_${family} as transit_invalid,
       min_distance
       FROM asstats
-      WHERE vantage_point = $1;`, [req.params.vp]);
+      WHERE vantage_point = \$1;`, [req.params.vp]);
 
     res.send(ases.rows);
   });

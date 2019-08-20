@@ -100,11 +100,11 @@ let chartRoas = (roas, oldChart) => {
   return roasByTal;
 };
 
-let chartOriginNeighbors = (neighbors, oldChart) => {
+let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
   let neighStats = _.map(_.filter(neighbors, (n) => n.min_distance <= 0), (neighbor) => {
-      let originating = neighbor.origin_valid + neighbor.origin_unknown + neighbor.origin_length_invalid + neighbor.origin_as_invalid;
-      let origin_valid = neighbor.origin_valid;
-      let origin_invalid = neighbor.origin_length_invalid + neighbor.origin_as_invalid;
+      let originating = neighbor[`origin_valid_${ipFamily}`] + neighbor[`origin_unknown_${ipFamily}`] + neighbor[`origin_length_invalid_${ipFamily}`] + neighbor[`origin_as_invalid_${ipFamily}`];
+      let origin_valid = neighbor[`origin_valid_${ipFamily}`];
+      let origin_invalid = neighbor[`origin_length_invalid_${ipFamily}`] + neighbor[`origin_as_invalid_${ipFamily}`];
       return {
         originating: originating,
         origin_valid: origin_valid,
@@ -131,7 +131,8 @@ let chartOriginNeighbors = (neighbors, oldChart) => {
             y: (neighbor.origin_invalid / neighbor.originating) * 100,
             r: (neighbor.originating / maxOriginating) * maxR
         }],
-        backgroundColor: bgPalette[neighbor.min_distance],
+        //backgroundColor: bgPalette[neighbor.min_distance],
+        backgroundColor: bgPalette[Math.floor(Math.random() * Math.floor(bgPalette.length-1))],
         hoverBackgroundColor: hoverPalette[neighbor.min_distance],
       }))
       // datasets: [{
@@ -186,11 +187,11 @@ let chartOriginNeighbors = (neighbors, oldChart) => {
   return neighborChart;
 };
 
-let chartTransitNeighbors = (neighbors, oldChart) => {
+let chartTransitNeighbors = (neighbors, oldChart, ipFamily) => {
   let neighStats = _.map(neighbors, (neighbor) => {
-      let transiting = neighbor.transit_valid + neighbor.transit_unknown + neighbor.transit_length_invalid + neighbor.transit_as_invalid;
-      let transit_valid = neighbor.transit_valid;
-      let transit_invalid = neighbor.transit_length_invalid + neighbor.transit_as_invalid;
+      let transiting = neighbor[`transit_valid_${ipFamily}`] + neighbor[`transit_unknown_${ipFamily}`] + neighbor[`transit_length_invalid_${ipFamily}`] + neighbor[`transit_as_invalid_${ipFamily}`];
+      let transit_valid = neighbor[`transit_valid_${ipFamily}`];
+      let transit_invalid = neighbor[`transit_length_invalid_${ipFamily}`] + neighbor[`transit_as_invalid_${ipFamily}`];
       return {
         transiting: transiting,
         transit_valid: transit_valid,
@@ -282,8 +283,9 @@ let prefixChart,
 
 let fetchAndLoad = () => {
   let vantagePoint = $("#vantagepoint").val();
+  let ipFamily = $("#family").val();
 
-  $.getJSON(`/api/stats/${vantagePoint}`, function(stats) {
+  $.getJSON(`/api/stats/${vantagePoint}/${ipFamily}`, function(stats) {
     $("#total_prefixes").html(stats.totalPrefixCount);
     $("#total_origin_asns").html(stats.originAsCount);
     $("#total_transit_asns").html(stats.transitAsCount);
@@ -331,13 +333,13 @@ let fetchAndLoad = () => {
 
   });
 
-  $.getJSON(`/api/as-resources/${vantagePoint}`, function(res) {
+  $.getJSON(`/api/as-resources/${vantagePoint}/${ipFamily}`, function(res) {
     let roas = res.roas;
     let neighbors = res.neighbors;
 
     roasChart = chartRoas(roas, roasChart);
-    originNeighChart = chartOriginNeighbors(neighbors, originNeighChart);
-    transitNeighChart = chartTransitNeighbors(neighbors, transitNeighChart);
+    originNeighChart = chartOriginNeighbors(neighbors, originNeighChart, ipFamily);
+    transitNeighChart = chartTransitNeighbors(neighbors, transitNeighChart, ipFamily);
   });
 };
 
@@ -347,4 +349,7 @@ $(document).ready(function() {
 
   $("#vantagepoint").change(fetchAndLoad);
   $("#vantagepoint").change();
+
+  $("#family").change(fetchAndLoad);
+  $("#family").change();
 });
