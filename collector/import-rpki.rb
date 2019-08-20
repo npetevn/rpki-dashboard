@@ -17,8 +17,10 @@ conn.exec "DELETE FROM roas;"
 
 parsed['roas'].each do |roa|
   (prefix, prefixlen) = roa['prefix'].split('/')
+  family = prefix.include?(':') ? 'v6' : 'v4'
   columns = {
     'asn' => roa['asn'].split('AS')[1].to_i,
+    'family' => "'#{family}'",
     'prefix' => "'#{prefix}/#{prefixlen}'",
     'prefixlen' => prefixlen.to_i,
     'maxlength' => roa['maxLength'],
