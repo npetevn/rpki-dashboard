@@ -40,7 +40,7 @@ services:
     volumes:
       - "/var/lib/repos/rpki-dashboard/collector:/collector/scripts"
       - "/var/lib/repos/rib-data:/collector/rib-data"
-      - "/var/lib/repos/rpki-postgres-data:/var/lib/postgresql/data"
+      - "/Users/npn/rpki-db:/var/lib/postgresql/data"
   rpkival:
     image: ripencc/rpki-validator-3-docker
     networks:
