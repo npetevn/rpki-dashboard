@@ -1,7 +1,7 @@
 //let bgPalette = ['#5c80bc', '#8f7fc4', '#c07cbf', '#e77aac', '#ff8090', '#ff9171', '#ffa955', '#e8c547'];
-let bgPalette = ['#6610f2', '#e83e8c', '#fd7e14', '#f6c23e', '#20c9a6'];
+let bgPalette = _.reverse(['#6610f2', '#e83e8c', '#fd7e14', '#f6c23e', '#20c9a6']);
+let hoverPalette = _.reverse(['#795da8', '#b47492', '#ad8667', '#b8a67a', '#52988a']);
 let goPalette = ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6', '#dd4477', '#66aa00', '#b82e2e', '#316395', '#3366cc', '#994499', '#22aa99', '#aaaa11', '#6633cc', '#e67300', '#8b0707', '#651067', '#329262', '#5574a6', '#3b3eac', '#b77322', '#16d620', '#b91383', '#f4359e', '#9c5935', '#a9c413', '#2a778d', '#668d1c', '#bea413', '#0c5922', '#743411'];
-let hoverPalette = ['#795da8', '#b47492', '#ad8667', '#b8a67a', '#52988a'];
 
 let drawDoughnutChart = (elementId, labels, data, oldChart) => {
   let length = labels.length;
@@ -39,9 +39,57 @@ let drawDoughnutChart = (elementId, labels, data, oldChart) => {
         display: true,
         position: 'left'
       },
+      layout: {
+        padding: {
+          left: 0,
+          top: 120,
+          bottom: 70,
+          right: 40
+        }
+      },
+      plugins: {
+        outlabels: {
+          text: '%v (%p)',
+          color: 'white',
+          stretch: 45,
+          font: {
+              resizable: true,
+              minSize: 12,
+              maxSize: 18
+          }
+        }
+      },
       cutoutPercentage: 80,
+      //legend: false,
+      //legendCallback: function (chart) {
+      //      var text = [];
+      //      text.push('<ul class="' + chart.id + '-legend doughnut-legend">');
+
+      //      var data = chart.data;
+      //      var datasets = data.datasets;
+      //      var labels = data.labels;
+
+      //      if (datasets.length) {
+      //          let totalCount = _.sum(_.map(datasets[0].data, x => parseInt(x)));
+
+      //          for (var i = 0; i < datasets[0].data.length; ++i) {
+      //            console.log('working on datasets', datasets);
+      //              text.push('<li><span style="width: 1em; height: 1em; background-color:' + datasets[0].backgroundColor[i] + '"></span>');
+      //              if (labels[i]) {
+      //                  let count = parseInt(datasets[0].data[i]);
+      //                  let percentage = ((count / totalCount) * 100).toFixed(2);
+      //                  text.push(labels[i] + ` - ${count} (${percentage}% of ${totalCount})`);
+      //              }
+      //              text.push('</li>');
+      //          }
+      //      }
+      //      text.push('</ul>');
+      //      return text.join('');
+      //  }
     }
   });
+
+  //$(`${elementId}Legend`).html(doughnutChart.generateLegend());
 
   return doughnutChart;
 };
@@ -118,6 +166,22 @@ let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
   let maxOriginating = _.max(_.map(neighStats, (n) => n.originating));
   let maxR = 80;
 
+  let datasets = _.map(neighStats, (neighbor) => ({
+    label: `AS${neighbor.asn} originates ${neighbor.origin_valid} valid and ${neighbor.origin_invalid} invalid of ${neighbor.originating} prefixes`,
+    data: [{
+        x: (neighbor.origin_valid / neighbor.originating) * 100,
+        y: (neighbor.origin_invalid / neighbor.originating) * 100,
+        r: (neighbor.originating / maxOriginating) * maxR + 1
+    }],
+    //backgroundColor: bgPalette[neighbor.min_distance],
+    backgroundColor: bgPalette[Math.floor((neighbor.originating / maxOriginating) * (bgPalette.length-1))],
+    hoverBackgroundColor: hoverPalette[neighbor.min_distance],
+  }));
+
+  datasets = _.sortBy(datasets, neighStats => neighStats.data[0].r);
+
+  let maxY = _.max(_.map(datasets, neighStats => neighStats.data[0].y));
+
   if (oldChart) {
     oldChart.destroy();
   }
@@ -125,17 +189,7 @@ let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
   let neighborChart = new Chart($("#originatingChart"), {
     type: 'bubble',
     data: {
-      datasets: _.map(neighStats, (neighbor) => ({
-        label: `AS${neighbor.asn} originates ${neighbor.origin_valid} valid and ${neighbor.origin_invalid} invalid of ${neighbor.originating} prefixes`,
-        data: [{
-            x: (neighbor.origin_valid / neighbor.originating) * 100,
-            y: (neighbor.origin_invalid / neighbor.originating) * 100,
-            r: (neighbor.originating / maxOriginating) * maxR
-        }],
-        //backgroundColor: bgPalette[neighbor.min_distance],
-        backgroundColor: bgPalette[Math.floor((neighbor.originating / maxOriginating) * (bgPalette.length-1))],
-        hoverBackgroundColor: hoverPalette[neighbor.min_distance],
-      }))
+      datasets: datasets
       // datasets: [{
       //   label: 'Direct Neighbors',
       //   data: _.map(neighStats, (neighbor) => {
@@ -182,7 +236,7 @@ let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
           },
           ticks: {
             min: 0,
-            max: 15
+            max: maxY+2
           }
         }]
       }
@@ -213,11 +267,15 @@ let chartTransitNeighbors = (neighbors, oldChart, ipFamily) => {
     data: [{
       x: (neighbor.transit_valid / neighbor.transiting) * 100,
       y: (neighbor.transit_invalid / neighbor.transiting) * 100,
-      r: (neighbor.transiting / maxTransiting) * maxR
+      r: (neighbor.transiting / maxTransiting) * maxR + 1
     }],
     backgroundColor: bgPalette[bgPalette.length - 1 - neighbor.min_distance],
     hoverBackgroundColor: hoverPalette[hoverPalette.length - 1 - neighbor.min_distance],
   }));
+  
+  datasets = _.sortBy(datasets, neighStats => neighStats.data[0].r);
+
+  let maxY = _.max(_.map(datasets, neighStats => neighStats.data[0].y));
 
   if (oldChart) {
     oldChart.destroy();
@@ -269,7 +327,7 @@ let chartTransitNeighbors = (neighbors, oldChart, ipFamily) => {
           },
           ticks: {
             min: 0,
-            max: 15
+            max: maxY+2
           }
         }]
       }
@@ -324,9 +382,15 @@ let fetchAndLoad = () => {
       prefixChart
     );
 
+//    originAsesChart = drawDoughnutChart("#originAsesChart",
+//      ['ASes originating valid prefixes', 'ASes originating unknown prefixes', 'ASes originating invalid maxlength prefixes', 'ASes originating hijacked prefixes'],
+//      [ stats.originValidAsCount, stats.originUnknownAsCount, stats.originLengthInvalidAsCount, stats.originAsInvalidAsCount],
+//      originAsesChart
+//    );
+
     originAsesChart = drawDoughnutChart("#originAsesChart",
-      ['ASes originating valid prefixes', 'ASes originating unknown prefixes', 'ASes originating invalid maxlength prefixes', 'ASes originating hijacked prefixes'],
-      [ stats.originValidAsCount, stats.originUnknownAsCount, stats.originLengthInvalidAsCount, stats.originAsInvalidAsCount],
+      ['ASes originating only unknown prefixes', 'ASes originating only valid prefixes', 'ASes originating no invalid prefixes', 'ASes originating some invalid prefixes', 'ASes originating only invalid prefixes'],
+      [ stats.originAsOnlyUnknownCount, stats.originAsOnlyValidCount, stats.originAsOnlyValidAndUnknownCount, stats.originAsMixedStatusCount, stats.originAsOnlyInvalidCount],
       originAsesChart
     );
 

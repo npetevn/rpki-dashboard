@@ -11618,25 +11618,25 @@ a:focus {
 
 .chart-bar {
   position: relative;
-  height: 10rem;
+  height: 30rem;
   width: 100%;
 }
 
 @media (min-width: 768px) {
   .chart-bar {
-    height: 20rem;
+    height: 30rem;
   }
 }
 
 .chart-pie {
   position: relative;
-  height: 15rem;
+  height: 30rem;
   width: 100%;
 }
 
 @media (min-width: 768px) {
   .chart-pie {
-    height: 20rem !important;
+    height: 30rem !important;
     /* height: calc(20rem - 43px) !important; */
   }
 }
