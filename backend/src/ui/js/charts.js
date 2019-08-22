@@ -1,5 +1,6 @@
 //let bgPalette = ['#5c80bc', '#8f7fc4', '#c07cbf', '#e77aac', '#ff8090', '#ff9171', '#ffa955', '#e8c547'];
 let bgPalette = ['#6610f2', '#e83e8c', '#fd7e14', '#f6c23e', '#20c9a6'];
+let goPalette = ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6', '#dd4477', '#66aa00', '#b82e2e', '#316395', '#3366cc', '#994499', '#22aa99', '#aaaa11', '#6633cc', '#e67300', '#8b0707', '#651067', '#329262', '#5574a6', '#3b3eac', '#b77322', '#16d620', '#b91383', '#f4359e', '#9c5935', '#a9c413', '#2a778d', '#668d1c', '#bea413', '#0c5922', '#743411'];
 let hoverPalette = ['#795da8', '#b47492', '#ad8667', '#b8a67a', '#52988a'];
 
 let drawDoughnutChart = (elementId, labels, data, oldChart) => {
@@ -132,7 +133,7 @@ let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
             r: (neighbor.originating / maxOriginating) * maxR
         }],
         //backgroundColor: bgPalette[neighbor.min_distance],
-        backgroundColor: bgPalette[Math.floor(Math.random() * Math.floor(bgPalette.length-1))],
+        backgroundColor: bgPalette[Math.floor((neighbor.originating / maxOriginating) * (bgPalette.length-1))],
         hoverBackgroundColor: hoverPalette[neighbor.min_distance],
       }))
       // datasets: [{
@@ -167,6 +168,10 @@ let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
             display: true,
             padding: 10,
             labelString: 'RPKI valid prefixes as % of totally originated'
+          },
+          ticks: {
+            min: 0,
+            max: 100
           }
         }],
         yAxes: [{
