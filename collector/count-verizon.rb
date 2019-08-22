@@ -6,21 +6,21 @@ def initas(stats, asn)
   if !stats.key? asn
     stats[asn] = {
       asn: asn,
-      transit_valid: 0,
-      transit_unknown: 0,
-      transit_as_invalid: 0,
-      transit_length_invalid: 0,
-      origin_valid: 0,
-      origin_unknown: 0,
-      origin_as_invalid: 0,
-      origin_length_invalid: 0,
+      transit_valid_v4: 0,
+      transit_unknown_v4: 0,
+      transit_as_invalid_v4: 0,
+      transit_length_invalid_v4: 0,
+      origin_valid_v4: 0,
+      origin_unknown_v4: 0,
+      origin_as_invalid_v4: 0,
+      origin_length_invalid_v4: 0,
 			min_distance: 1000
     }
   end
 end
 
 def incr_counter(stats, asn, type, status)
-	stats[asn]["#{type}_#{status}".to_sym] += 1
+	stats[asn]["#{type}_#{status}_v4".to_sym] += 1
 end
 
 def set_distance(stats, asn, dist)
@@ -57,7 +57,7 @@ def load(db, gw, file)
       nexthopas = aspath[0]
 
       status = 'unknown'
-      roas = conn.exec "SELECT * FROM roas WHERE inet(prefix) >>= inet '#{prefix}/#{prefixlen}';"
+      roas = conn.exec "SELECT * FROM roas WHERE prefix >>= inet '#{prefix}/#{prefixlen}';"
       if roas.any? { |roa| roa['asn'] == originas && prefixlen <= roa['maxlength'] }
         status = 'valid'
       elsif roas.any? { |roa| roa['asn'] == originas && prefixlen > roa['maxlength'] }
