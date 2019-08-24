@@ -1,29 +1,5 @@
 version: "3.3"
 services:
-  #  bgpsrc:
-  #    #image: mikenowak/exabgp
-  #    build:
-  #      context: ./bgpsrc/image
-  #      dockerfile: Dockerfile
-  #    networks:
-  #      bgp:
-  #        ipv4_address: 172.16.238.100
-  #        aliases:
-  #          - bgpsrc
-  #    volumes:
-  #      - "/var/lib/repos/rpki-dashboard/bgpsrc/exabgp:/etc/exabgp"
-  #    command: sleep 100000
-  #  bgpinject:
-  #    image: mikenowak/exabgp
-  #    networks:
-  #      bgp:
-  #        ipv4_address: 172.16.238.200
-  #        aliases:
-  #          - bgpinject
-  #    ports:
-  #      - "5001:5001"
-  #    volumes:
-  #      - "/var/lib/repos/rpki-dashboard/bgpinject/exabgp:/usr/etc/exabgp"
   database:
     build:
       context: ./database/image
@@ -41,6 +17,7 @@ services:
       - "/var/lib/repos/rpki-dashboard/collector:/collector/scripts"
       - "/var/lib/repos/rib-data:/collector/rib-data"
       - "/Users/npn/rpki-db:/var/lib/postgresql/data"
+      - "/var/lib/repos/mrt-exports:/collector/mrt-exports"
   rpkival:
     image: ripencc/rpki-validator-3-docker
     networks:
@@ -52,11 +29,10 @@ services:
       - "/var/lib/repos/rpki-dashboard/rpki/tals:/var/lib/rpki-validator-3/preconfigured-tals"
     ports:
       - "8080:8080"
-  api:
+  app:
     build:
-      context: ./backend/image
+      context: ./app/image
       dockerfile: Dockerfile
-    command: sleep 100000
     environment:
       - PGHOST=db
       - PGUSER=dev
@@ -64,11 +40,48 @@ services:
     networks:
       rpki:
         aliases:
-          - api
+          - app
     volumes:
-      - "/var/lib/repos/rpki-dashboard/backend/src:/app"
+      - "/var/lib/repos/rpki-dashboard/app/src:/app"
     ports:
       - "4000:4000"
+  proxy:
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    networks:
+      rpki:
+        aliases:
+          - proxy
+  quagga:
+    build:
+      context: ./quagga
+      dockerfile: Dockerfile
+    ports:
+      - "179:179"
+    volumes:
+      - "/var/lib/repos/mrt-exports:/mrt-exports"
+    cap_add:
+      - NET_ADMIN
+      - NET_BROADCAST
+    networks:
+      rpki:
+        aliases:
+          - quagga
+  rpkirtr:
+    build:
+      context: ./rpkirtr
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    networks:
+      rpki:
+        aliases:
+          - rpkirtr
 networks:
   rpki:
     driver: bridge
