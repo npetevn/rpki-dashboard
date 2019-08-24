@@ -193,7 +193,7 @@ let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
       },
       tooltips: {
         enabled: true,
-        bodyFontSize: 20,
+        //bodyFontSize: 20,
         callbacks: {
           label: function(tooltipItems, data) {
             return data.datasets[tooltipItems.datasetIndex].label;
@@ -205,12 +205,12 @@ let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
           scaleLabel: {
             display: true,
             padding: 10,
-            fontColor: '#000',
-            fontSize: 18,
+            //fontColor: '#000',
+            //fontSize: 18,
             labelString: 'RPKI valid prefixes as % of totally originated'
           },
           ticks: {
-            fontSize: 20,
+            //fontSize: 20,
             min: 0,
             max: 100
           }
@@ -219,12 +219,12 @@ let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
           scaleLabel: {
             display: true,
             padding: 60,
-            fontColor: '#000',
-            fontSize: 18,
+            //fontColor: '#000',
+            //fontSize: 18,
             labelString: 'RPKI invalid prefixes as % of totally originated'
           },
           ticks: {
-            fontSize: 20,
+            //fontSize: 20,
             min: 0,
             max: maxY+2
           }
@@ -295,7 +295,7 @@ let chartTransitNeighbors = (neighbors, oldChart, ipFamily) => {
       },
       tooltips: {
         enabled: true,
-        bodyFontSize: 20,
+        //bodyFontSize: 20,
         callbacks: {
           label: function(tooltipItems, data) {
             return data.datasets[tooltipItems.datasetIndex].label;
@@ -307,12 +307,12 @@ let chartTransitNeighbors = (neighbors, oldChart, ipFamily) => {
           scaleLabel: {
             display: true,
             padding: 10,
-            fontColor: '#000',
-            fontSize: 18,
+            //fontColor: '#000',
+            //fontSize: 18,
             labelString: 'RPKI valid prefixes as % of totally transitted'
           },
           ticks: {
-            fontSize: 20,
+            //fontSize: 20,
             min: 0,
             max: 100
           }
@@ -321,14 +321,14 @@ let chartTransitNeighbors = (neighbors, oldChart, ipFamily) => {
           scaleLabel: {
             display: true,
             padding: 60,
-            fontColor: '#000',
-            fontSize: 18,
+            //fontColor: '#000',
+            //fontSize: 18,
             labelString: 'RPKI invalid prefixes as % of totally transitted'
           },
           ticks: {
             min: 0,
             max: maxY+2,
-            fontSize: 20,
+            //fontSize: 20,
           }
         }]
       }
