@@ -23,7 +23,10 @@ let fetchAndLoad = () => {
       { data: 'transit_invalid' },
       { data: 'min_distance' }
     ],
-    order: [[7, 'asc']]
+    order: [[7, 'asc']],
+    search: {
+      regex: true
+    }
   });
 };
 

@@ -3,6 +3,8 @@ let bgPalette = _.reverse(['#6610f2', '#e83e8c', '#fd7e14', '#f6c23e', '#20c9a6'
 let hoverPalette = _.reverse(['#795da8', '#b47492', '#ad8667', '#b8a67a', '#52988a']);
 let goPalette = ['#3366cc', '#dc3912', '#ff9900', '#109618', '#990099', '#0099c6', '#dd4477', '#66aa00', '#b82e2e', '#316395', '#3366cc', '#994499', '#22aa99', '#aaaa11', '#6633cc', '#e67300', '#8b0707', '#651067', '#329262', '#5574a6', '#3b3eac', '#b77322', '#16d620', '#b91383', '#f4359e', '#9c5935', '#a9c413', '#2a778d', '#668d1c', '#bea413', '#0c5922', '#743411'];
 
+Chart.plugins.unregister(ChartDataLabels);
+
 let drawDoughnutChart = (elementId, labels, data, oldChart) => {
   let length = labels.length;
   let bgColors = bgPalette.slice(0, length);
@@ -60,36 +62,9 @@ let drawDoughnutChart = (elementId, labels, data, oldChart) => {
         }
       },
       cutoutPercentage: 80,
-      //legend: false,
-      //legendCallback: function (chart) {
-      //      var text = [];
-      //      text.push('<ul class="' + chart.id + '-legend doughnut-legend">');
-
-      //      var data = chart.data;
-      //      var datasets = data.datasets;
-      //      var labels = data.labels;
-
-      //      if (datasets.length) {
-      //          let totalCount = _.sum(_.map(datasets[0].data, x => parseInt(x)));
-
-      //          for (var i = 0; i < datasets[0].data.length; ++i) {
-      //            console.log('working on datasets', datasets);
-      //              text.push('<li><span style="width: 1em; height: 1em; background-color:' + datasets[0].backgroundColor[i] + '"></span>');
-      //              if (labels[i]) {
-      //                  let count = parseInt(datasets[0].data[i]);
-      //                  let percentage = ((count / totalCount) * 100).toFixed(2);
-      //                  text.push(labels[i] + ` - ${count} (${percentage}% of ${totalCount})`);
-      //              }
-      //              text.push('</li>');
-      //          }
-      //      }
-      //      text.push('</ul>');
-      //      return text.join('');
-      //  }
     }
   });
 
-  //$(`${elementId}Legend`).html(doughnutChart.generateLegend());
 
   return doughnutChart;
 };
@@ -132,6 +107,7 @@ let chartRoas = (roas, oldChart) => {
         }
       ]
     },
+    plugins: [ChartDataLabels],
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -142,6 +118,13 @@ let chartRoas = (roas, oldChart) => {
             min: 0,
           }
         }]
+      },
+      plugins: {
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          offset: 4
+        }
       }
     }
   });
@@ -210,6 +193,7 @@ let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
       },
       tooltips: {
         enabled: true,
+        bodyFontSize: 20,
         callbacks: {
           label: function(tooltipItems, data) {
             return data.datasets[tooltipItems.datasetIndex].label;
@@ -221,9 +205,12 @@ let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
           scaleLabel: {
             display: true,
             padding: 10,
+            fontColor: '#000',
+            fontSize: 18,
             labelString: 'RPKI valid prefixes as % of totally originated'
           },
           ticks: {
+            fontSize: 20,
             min: 0,
             max: 100
           }
@@ -232,9 +219,12 @@ let chartOriginNeighbors = (neighbors, oldChart, ipFamily) => {
           scaleLabel: {
             display: true,
             padding: 60,
+            fontColor: '#000',
+            fontSize: 18,
             labelString: 'RPKI invalid prefixes as % of totally originated'
           },
           ticks: {
+            fontSize: 20,
             min: 0,
             max: maxY+2
           }
@@ -272,7 +262,7 @@ let chartTransitNeighbors = (neighbors, oldChart, ipFamily) => {
     backgroundColor: bgPalette[bgPalette.length - 1 - neighbor.min_distance],
     hoverBackgroundColor: hoverPalette[hoverPalette.length - 1 - neighbor.min_distance],
   }));
-  
+
   datasets = _.sortBy(datasets, neighStats => neighStats.data[0].r);
 
   let maxY = _.max(_.map(datasets, neighStats => neighStats.data[0].y));
@@ -305,6 +295,7 @@ let chartTransitNeighbors = (neighbors, oldChart, ipFamily) => {
       },
       tooltips: {
         enabled: true,
+        bodyFontSize: 20,
         callbacks: {
           label: function(tooltipItems, data) {
             return data.datasets[tooltipItems.datasetIndex].label;
@@ -316,18 +307,28 @@ let chartTransitNeighbors = (neighbors, oldChart, ipFamily) => {
           scaleLabel: {
             display: true,
             padding: 10,
+            fontColor: '#000',
+            fontSize: 18,
             labelString: 'RPKI valid prefixes as % of totally transitted'
+          },
+          ticks: {
+            fontSize: 20,
+            min: 0,
+            max: 100
           }
         }],
         yAxes: [{
           scaleLabel: {
             display: true,
             padding: 60,
+            fontColor: '#000',
+            fontSize: 18,
             labelString: 'RPKI invalid prefixes as % of totally transitted'
           },
           ticks: {
             min: 0,
-            max: maxY+2
+            max: maxY+2,
+            fontSize: 20,
           }
         }]
       }
@@ -377,7 +378,7 @@ let fetchAndLoad = () => {
     $("#transit_invalid_asns_percent").html(transitInvalidAsnsPercent.toFixed(2) + '%');
 
     prefixChart = drawDoughnutChart("#prefixChart",
-      ['RPKI Valid prefixes', 'RPKI unknown prefixes', 'RPKI protected prefixes from wrong AS', 'RPKI protected prefixes with wrong prefix length'],
+      ['RPKI valid prefixes', 'RPKI unknown prefixes', 'RPKI protected prefixes from wrong AS', 'RPKI protected prefixes with wrong prefix length'],
       [ stats.validPrefixCount, stats.unknownPrefixCount, stats.asInvalidPrefixCount, stats.lengthInvalidPrefixCount],
       prefixChart
     );
@@ -389,14 +390,14 @@ let fetchAndLoad = () => {
 //    );
 
     originAsesChart = drawDoughnutChart("#originAsesChart",
-      ['ASes originating only unknown prefixes', 'ASes originating only valid prefixes', 'ASes originating no invalid prefixes', 'ASes originating some invalid prefixes', 'ASes originating only invalid prefixes'],
-      [ stats.originAsOnlyUnknownCount, stats.originAsOnlyValidCount, stats.originAsOnlyValidAndUnknownCount, stats.originAsMixedStatusCount, stats.originAsOnlyInvalidCount],
+      ['ASes originating only valid prefixes', 'ASes originating only unknown prefixes', 'ASes originating no invalid prefixes', 'ASes originating some invalid prefixes', 'ASes originating only invalid prefixes'],
+      [ stats.originAsOnlyValidCount, stats.originAsOnlyUnknownCount, stats.originAsOnlyValidAndUnknownCount, stats.originAsMixedStatusCount, stats.originAsOnlyInvalidCount],
       originAsesChart
     );
 
     transitAsesChart = drawDoughnutChart("#transitAsesChart",
-      ['ASes transiting valid prefixes', 'ASes transiting unknown prefixes', 'ASes transiting invalid maxlength prefixes', 'ASes transiting hijacked prefixes'],
-      [ stats.transitValidAsCount, stats.transitUnknownAsCount, stats.transitLengthInvalidAsCount, stats.transitAsInvalidAsCount],
+      ['ASes transiting only valid and unknown prefixes', 'ASes transiting mix of invalid prefixes', 'ASes transiting unallowed subprefixes', 'ASes transiting protected prefixes from wrong AS'],
+      [ stats.transitAsOnlyValidAndUnknownCount, stats.transitAsMixInvalidCount, stats.transitAsLengthInvalidCount, stats.transitAsInvalidCount ],
       transitAsesChart
     );
 

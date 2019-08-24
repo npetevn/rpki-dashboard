@@ -23,11 +23,71 @@ publicRouter.route('/stats/:vp/:family')
     let originAsCount = await client.query(`SELECT count(*) FROM asstats WHERE (origin_valid_${family} + origin_unknown_${family} + origin_length_invalid_${family} + origin_as_invalid_${family}) > 0 AND vantage_point=$1;`, [req.params.vp]);
     let transitAsCount = await client.query(`SELECT count(*) FROM asstats WHERE (transit_valid_${family} + transit_unknown_${family} + transit_length_invalid_${family} + transit_as_invalid_${family}) > 0 AND vantage_point=$1;`, [req.params.vp]);
 
+    let originAsOnlyUnknownCount = await client.query(`
+      SELECT count(*) FROM asstats
+      WHERE (origin_unknown_${family} > 0) AND
+            (origin_valid_${family} = 0 AND origin_as_invalid_${family} = 0 AND origin_length_invalid_${family} = 0)  AND
+            vantage_point=$1;`,
+      [req.params.vp]);
+
+    let originAsOnlyValidCount = await client.query(`
+      SELECT count(*) FROM asstats
+      WHERE (origin_valid_${family} > 0) AND
+            (origin_unknown_${family} = 0 AND origin_as_invalid_${family} = 0 AND origin_length_invalid_${family} = 0) AND
+            vantage_point=$1;`,
+      [req.params.vp]);
+
+    let originAsOnlyValidAndUnknownCount = await client.query(`
+      SELECT count(*) FROM asstats
+      WHERE (origin_valid_${family} > 0 AND origin_unknown_${family} > 0) AND
+            (origin_as_invalid_${family} = 0 AND origin_length_invalid_${family} = 0) AND
+            vantage_point=$1;`,
+      [req.params.vp]);
+
+    let originAsMixedStatusCount = await client.query(`
+      SELECT count(*) FROM asstats
+      WHERE (origin_valid_${family} > 0 OR origin_unknown_${family} > 0) AND
+            (origin_as_invalid_${family} > 0 OR origin_length_invalid_${family} > 0) AND
+            vantage_point=$1;`,
+      [req.params.vp]);
+
+    let originAsOnlyInvalidCount = await client.query(`
+      SELECT count(*) FROM asstats
+      WHERE (origin_valid_${family} = 0 AND origin_unknown_${family} = 0) AND
+            (origin_as_invalid_${family} > 0 OR origin_length_invalid_${family} > 0) AND
+            vantage_point=$1;`,
+      [req.params.vp]);
+
+    let transitAsOnlyValidAndUnknownCount = await client.query(`
+      SELECT count(*) FROM asstats
+      WHERE (transit_valid_${family} + transit_unknown_${family} > 0) AND
+            (transit_as_invalid_${family} = 0 AND transit_length_invalid_${family} = 0) AND
+            vantage_point=$1;`,
+      [req.params.vp]);
+
+    let transitAsInvalidCount = await client.query(`
+      SELECT count(*) FROM asstats
+      WHERE (transit_as_invalid_${family} > 0 AND transit_length_invalid_${family} = 0) AND
+            vantage_point=$1;`,
+      [req.params.vp]);
+
+    let transitAsLengthInvalidCount = await client.query(`
+      SELECT count(*) FROM asstats
+      WHERE (transit_as_invalid_${family} = 0 AND transit_length_invalid_${family} > 0) AND
+            vantage_point=$1;`,
+      [req.params.vp]);
+
+    let transitAsMixInvalidCount = await client.query(`
+      SELECT count(*) FROM asstats
+      WHERE (transit_as_invalid_${family} > 0 AND transit_length_invalid_${family} > 0) AND
+            vantage_point=$1;`,
+      [req.params.vp]);
+
     let originValidAsCount = await client.query(`SELECT count(*) FROM asstats WHERE origin_valid_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
-    let originUnknownAsCount = await client.query(`SELECT count(*) FROM asstats WHERE origin_unknown_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
+//    let originUnknownAsCount = await client.query(`SELECT count(*) FROM asstats WHERE origin_unknown_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
     let originAsInvalidAsCount = await client.query(`SELECT count(*) FROM asstats WHERE origin_as_invalid_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
     let originLengthInvalidAsCount = await client.query(`SELECT count(*) FROM asstats WHERE origin_length_invalid_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
-
+//
     let transitValidAsCount = await client.query(`SELECT count(*) FROM asstats WHERE transit_valid_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
     let transitUnknownAsCount = await client.query(`SELECT count(*) FROM asstats WHERE transit_unknown_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
     let transitAsInvalidAsCount = await client.query(`SELECT count(*) FROM asstats WHERE transit_as_invalid_${family} > 0 AND vantage_point=$1;`, [req.params.vp]);
@@ -40,14 +100,23 @@ publicRouter.route('/stats/:vp/:family')
       totalAsCount: asCount.rows[0]['count'],
       originAsCount: originAsCount.rows[0]['count'],
       transitAsCount: transitAsCount.rows[0]['count'],
+      originAsOnlyUnknownCount: originAsOnlyUnknownCount.rows[0]['count'],
+      originAsOnlyValidCount: originAsOnlyValidCount.rows[0]['count'],
+      originAsOnlyValidAndUnknownCount: originAsOnlyValidAndUnknownCount.rows[0]['count'],
+      originAsMixedStatusCount: originAsMixedStatusCount.rows[0]['count'],
+      originAsOnlyInvalidCount: originAsOnlyInvalidCount.rows[0]['count'],
       originValidAsCount: originValidAsCount.rows[0]['count'],
-      originUnknownAsCount: originUnknownAsCount.rows[0]['count'],
+//      originUnknownAsCount: originUnknownAsCount.rows[0]['count'],
       originAsInvalidAsCount: originAsInvalidAsCount.rows[0]['count'],
       originLengthInvalidAsCount: originLengthInvalidAsCount.rows[0]['count'],
       transitValidAsCount: transitValidAsCount.rows[0]['count'],
-      transitUnknownAsCount: transitUnknownAsCount.rows[0]['count'],
+//      transitUnknownAsCount: transitUnknownAsCount.rows[0]['count'],
       transitAsInvalidAsCount: transitAsInvalidAsCount.rows[0]['count'],
       transitLengthInvalidAsCount: transitLengthInvalidAsCount.rows[0]['count'],
+      transitAsOnlyValidAndUnknownCount: transitAsOnlyValidAndUnknownCount.rows[0]['count'],
+      transitAsInvalidCount: transitAsInvalidCount.rows[0]['count'],
+      transitAsLengthInvalidCount: transitAsLengthInvalidCount.rows[0]['count'],
+      transitAsMixInvalidCount: transitAsMixInvalidCount.rows[0]['count'],
       totalPrefixCount: prefixStats['totalsum'],
       validPrefixCount: prefixStats['valid'],
       unknownPrefixCount: prefixStats['unknown'],
