@@ -1,22 +1,9 @@
 #!/bin/bash
 
-sleep 60
-date=`date +%Y%m%d`
-hour=$(( `date +%H` ))
+ruby /collector/scripts/import-rpki.rb
 
-if [[ $hour != $(( ($hour / 2) * 2 )) ]]; then
-  hour=$(($hour-1))
-fi
+cd /collector/mrt-exports
+bunzip2 -z rpki-npn-full.mrt
+ruby /collector/scripts/import-prefixes.rb 'rpkilg' 'border-lozenets' /collector/mrt-exports/rpki-npn-full.mrt.bz1
 
-if [[ $hour -lt 10 ]]; then
-  hour="0${hour}"
-fi
-
-file="rib.${date}.${hour}00.bz2"
-dir=`date +%Y.%m`
-
-wget http://archive.routeviews.org/route-views.soxrs/bgpdata/$dir/RIBS/$file -O /collector/data/$file
-ruby /collector/scripts/import.rb prefix load rpkilg ripe-amsix /collector/data/$file
-
-#ruby /collector/scripts/import-rpki.rb
-
+ruby /collector/scripts/aggregate-asstats.rb 'rpkilg' 'border-lozenes'

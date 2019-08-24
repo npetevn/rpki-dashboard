@@ -22,4 +22,5 @@ COPY init-user-db.sh /docker-entrypoint-initdb.d/
 RUN chmod a+x /docker-entrypoint-initdb.d/init-user-db.sh
 
 COPY import.sh /import.sh
-#RUN chmod a+x /import.sh
+RUN chmod a+x /import.sh
+COPY cron-import /etc/cron.d/
