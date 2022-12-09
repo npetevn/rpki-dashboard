@@ -23,9 +23,9 @@
   "homepage": "https://github.com/npetevn/rpki-dashboard#readme",
   "dependencies": {
     "app-module-path": "^2.2.0",
-    "body-parser": "^1.19.0",
+    "body-parser": "^1.20.1",
     "cookie-parser": "^1.4.4",
-    "express": "^4.16.4",
+    "express": "^4.18.2",
     "forever-monitor": "^1.7.1",
     "lodash": ">=4.17.13",
     "braces": ">=2.3.1",
